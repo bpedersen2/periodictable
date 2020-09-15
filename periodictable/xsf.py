@@ -16,7 +16,7 @@ The following attributes are added to each element:
        interpolated from sftable.
 
    :func:`Xray.f0`
-       Returns f0 for the given vector Q, with Q[i] in $[0,24\pi]$ |1/Ang|.
+       Returns f0 for the given vector Q, with Q[i] in $[0, 24\pi]$ |1/Ang|.
 
    :func:`Xray.sld`
        Returns scattering length density (*real*, *imaginary*) for the
@@ -170,19 +170,18 @@ with minor formatting changes:
        photoabsorption, scattering, transmission, and reflection at E=50-30000 eV,
        Z=1-92", Atomic Data and Nuclear Data Tables 54 no.2, 181-342 (July 1993).
 
-.. [#Deslattes2003] R. D. Deslattes, E. G. Kessler, Jr., P. Indelicato, L. de Billy, 
+.. [#Deslattes2003] R. D. Deslattes, E. G. Kessler, Jr., P. Indelicato, L. de Billy,
        E. Lindroth, and J. Anton.  Rev. Mod. Phys. 75, 35-99 (2003).
 
 """
 from __future__ import with_statement
 __all__ = ['Xray', 'init', 'init_spectral_lines',
-           'xray_energy','xray_wavelength',
-           'xray_sld','xray_sld_from_atoms',
-           'emission_table','sld_table','plot_xsf',
+           'xray_energy', 'xray_wavelength',
+           'xray_sld', 'xray_sld_from_atoms',
+           'emission_table', 'sld_table', 'plot_xsf',
            'index_of_refraction', 'mirror_reflectivity',
            ]
 import os.path
-import glob
 
 import numpy
 from numpy import nan, pi, exp, sin, cos, sqrt, radians
@@ -193,7 +192,7 @@ from .constants import (avogadro_number, plancks_constant, speed_of_light,
 from .util import require_keywords
 
 def xray_wavelength(energy):
-    """
+    r"""
     Convert X-ray energy to wavelength.
 
     :Parameters:
@@ -217,7 +216,7 @@ def xray_wavelength(energy):
     return plancks_constant*speed_of_light/numpy.asarray(energy)*1e7
 
 def xray_energy(wavelength):
-    """
+    r"""
     Convert X-ray wavelength to energy.
 
     :Parameters:
@@ -246,9 +245,9 @@ class Xray(object):
     from command prompt for details.
     """
     _nff_path = get_data_path('xsf')
-    sftable_units = ["eV","",""]
-    scattering_factors_units = ["",""]
-    sld_units = ["1e-6/Ang^2","1e-6/Ang^2"]
+    sftable_units = ["eV", "", ""]
+    scattering_factors_units = ["", ""]
+    sld_units = ["1e-6/Ang^2", "1e-6/Ang^2"]
     _table = None
     def __init__(self, element):
         self.element = element
@@ -261,17 +260,17 @@ class Xray(object):
             filename = os.path.join(self._nff_path,
                                     self.element.symbol.lower()+".nff")
             if self.element.symbol != 'n' and os.path.exists(filename):
-                xsf = numpy.loadtxt(filename,skiprows=1).T
-                xsf[1,xsf[1]==-9999.] = numpy.NaN
+                xsf = numpy.loadtxt(filename, skiprows=1).T
+                xsf[1, xsf[1] == -9999.] = numpy.NaN
                 xsf[0] *= 0.001  # Use keV in table rather than eV
                 self._table = xsf
         return self._table
-    sftable = property(_gettable,doc="X-ray scattering factor table (E,f1,f2)")
+    sftable = property(_gettable, doc="X-ray scattering factor table (E,f1,f2)")
 
     @require_keywords
     def scattering_factors(self, energy=None, wavelength=None):
         """
-        X-ray scattering factors f',f''.
+        X-ray scattering factors f', f''.
 
         :Parameters:
             *energy* : float or vector | keV
@@ -287,7 +286,7 @@ class Xray(object):
         """
         xsf = self.sftable
         if xsf is None:
-            return None,None
+            return None, None
 
         if wavelength is not None:
             energy = xray_energy(wavelength)
@@ -297,11 +296,11 @@ class Xray(object):
         scalar = numpy.isscalar(energy)
         if scalar:
             energy = numpy.array([energy])
-        f1 = numpy.interp(energy,xsf[0],xsf[1],left=nan,right=nan)
-        f2 = numpy.interp(energy,xsf[0],xsf[2],left=nan,right=nan)
+        f1 = numpy.interp(energy, xsf[0], xsf[1], left=nan, right=nan)
+        f2 = numpy.interp(energy, xsf[0], xsf[2], left=nan, right=nan)
         if scalar:
-            f1,f2 = f1[0],f2[0]
-        return f1,f2
+            f1, f2 = f1[0], f2[0]
+        return f1, f2
 
     def f0(self, Q):
         r"""
@@ -369,16 +368,16 @@ class Xray(object):
         Data comes from the Henke Xray scattering factors database at the
         Lawrence Berkeley Laboratory Center for X-ray Optics.
         """
-        f1,f2 = self.scattering_factors(wavelength=wavelength, energy=energy)
+        f1, f2 = self.scattering_factors(wavelength=wavelength, energy=energy)
         if f1 is None or self.element.number_density is None:
-            return None,None
+            return None, None
         rho = f1*electron_radius*self.element.number_density*1e-8
         irho = f2*electron_radius*self.element.number_density*1e-8
-        return rho,irho
+        return rho, irho
 
 # Note: docs and function prototype are reproduced in __init__
 @require_keywords
-def xray_sld(compound, density=None,  natural_density=None,
+def xray_sld(compound, density=None, natural_density=None,
              wavelength=None, energy=None):
     """
     Compute xray scattering length densities for molecules.
@@ -407,29 +406,30 @@ def xray_sld(compound, density=None,  natural_density=None,
                                 natural_density=natural_density)
     assert compound.density is not None, "scattering calculation needs density"
 
-    if wavelength is not None: energy = xray_energy(wavelength)
+    if wavelength is not None:
+        energy = xray_energy(wavelength)
     assert energy is not None, "scattering calculation needs energy or wavelength"
 
-    mass,sum_f1,sum_f2 = 0,0,0
-    for element,quantity in compound.atoms.items():
+    mass, sum_f1, sum_f2 = 0, 0, 0
+    for element, quantity in compound.atoms.items():
         mass += element.mass*quantity
-        f1,f2 = element.xray.scattering_factors(energy=energy)
-        #print element,f1,f2,wavelength
+        f1, f2 = element.xray.scattering_factors(energy=energy)
+        #print element, f1, f2, wavelength
         sum_f1 += f1*quantity
         sum_f2 += f2*quantity
 
     if mass == 0: # because the formula is empty
-        return 0,0
+        return 0, 0
 
     N = (compound.density/mass*avogadro_number*1e-8)
     rho = N*sum_f1*electron_radius
     irho = N*sum_f2*electron_radius
-    return rho,irho
+    return rho, irho
 
 
 @require_keywords
-def index_of_refraction(compound,density=None,natural_density=None,
-                        energy=None,wavelength=None):
+def index_of_refraction(compound, density=None, natural_density=None,
+                        energy=None, wavelength=None):
     """
     Calculates the index of refraction for a given compound
 
@@ -454,11 +454,12 @@ def index_of_refraction(compound,density=None,natural_density=None,
     Formula taken from http://xdb.lbl.gov (section 1.7) and checked
     against http://henke.lbl.gov/optical_constants/getdb2.html
     """
-    if energy is not None: wavelength = xray_wavelength(energy)
+    if energy is not None:
+        wavelength = xray_wavelength(energy)
     assert wavelength is not None, "scattering calculation needs energy or wavelength"
-    f1,f2 = xray_sld(compound,
-                     density=density, natural_density=natural_density,
-                     wavelength=wavelength)
+    f1, f2 = xray_sld(compound,
+                      density=density, natural_density=natural_density,
+                      wavelength=wavelength)
     return 1 - wavelength**2/(2*pi)*(f1 + f2*1j)*1e-6
 
 @require_keywords
@@ -486,23 +487,26 @@ def mirror_reflectivity(compound, density=None, natural_density=None,
 
     :Returns:
         *reflectivity* : matrix
-            matrix of reflectivity as function of (angle,energy)
+            matrix of reflectivity as function of (angle, energy)
 
     :Notes:
 
     Formula taken from http://xdb.lbl.gov (section 4.2) and checked
     against http://henke.lbl.gov/optical_constants/mirror2.html
     """
-    if energy is not None: wavelength = xray_wavelength(energy)
+    if energy is not None:
+        wavelength = xray_wavelength(energy)
     assert wavelength is not None, "scattering calculation needs energy or wavelength"
     angle = radians(angle)
-    if (numpy.isscalar(wavelength)): wavelength=numpy.array( [wavelength] )
-    if (numpy.isscalar(angle))     : angle =numpy.array( [angle] )
+    if numpy.isscalar(wavelength):
+        wavelength = numpy.array([wavelength])
+    if numpy.isscalar(angle):
+        angle = numpy.array([angle])
     nv = index_of_refraction(compound=compound,
                              density=density, natural_density=natural_density,
                              wavelength=wavelength)
-    ki = 2*pi/wavelength[None,:] * sin(angle[:,None])
-    kf = 2*pi/wavelength[None,:] * sqrt(nv[None,:]**2 - cos(angle[:,None])**2)
+    ki = 2*pi/wavelength[None, :] * sin(angle[:, None])
+    kf = 2*pi/wavelength[None, :] * sqrt(nv[None, :]**2 - cos(angle[:, None])**2)
     r = (ki-kf)/(ki+kf)*exp(-2*ki*kf*roughness**2)
     return abs(r)**2
 
@@ -511,7 +515,7 @@ def xray_sld_from_atoms(*args, **kw):
     """
     .. deprecated:: 0.91
 
-        :func:`xray_sld` now accepts a dictionary of \{atom\: count\} directly.
+        :func:`xray_sld` now accepts a dictionary of *{atom: count}* directly.
     """
     return xray_sld(*args, **kw)
 
@@ -617,18 +621,19 @@ def init_spectral_lines(table):
     Element.K_alpha_units = "angstrom"
     Element.K_beta1_units = "angstrom"
     for row in spectral_lines_data.split('\n'):
-        el,K_alpha,K_beta1 = row.split()
-        el = table.symbol(el) 
+        el, K_alpha, K_beta1 = row.split()
+        el = table.symbol(el)
         el.K_alpha = float(K_alpha)
         el.K_beta1 = float(K_beta1)
 
 def init(table, reload=False):
 
-    if 'xray' in table.properties and not reload: return
+    if 'xray' in table.properties and not reload:
+        return
     table.properties.append('xray')
 
     # Create an xray object for the particular element/ion.  Note that
-    # we must not use normal attribute tests such as "hasattr(el,'attr')"
+    # we must not use normal attribute tests such as "hasattr(el, 'attr')"
     # or "try: el.attr; except:" since the delegation methods on Ion will
     # just return the attribute from the base element.  Instead we check
     # for an instance specific xray object for the particular ion prior
@@ -636,7 +641,7 @@ def init(table, reload=False):
     # TODO: is there a better way to set up delegation on a field by
     # field basis?
     def _cache_xray(el):
-        if '_xray' not in el.__dict__ and isinstance(el, (Element,Ion)):
+        if '_xray' not in el.__dict__ and isinstance(el, (Element, Ion)):
             el._xray = Xray(el)
         return el._xray
     Element.xray = property(_cache_xray)
@@ -660,11 +665,11 @@ def plot_xsf(el):
     import pylab
     xsf = el.xray.sftable
     pylab.title('X-ray scattering factors for '+el.name)
-    pylab.plot(xsf[0],xsf[1])
-    pylab.plot(xsf[0],xsf[2])
+    pylab.plot(xsf[0], xsf[1])
+    pylab.plot(xsf[0], xsf[2])
     pylab.xlabel('Energy (keV)')
     pylab.ylabel('Scattering factor')
-    pylab.legend(['f1','f2'])
+    pylab.legend(['f1', 'f2'])
     pylab.show()
 
 def sld_table(wavelength=None, table=None):
@@ -689,7 +694,7 @@ def sld_table(wavelength=None, table=None):
          Li   3.92   0.00
          Be  13.93   0.01
           B  18.40   0.01
-          C  17.86   0.03
+          C  18.71   0.03
           N   6.88   0.02
           O   9.74   0.04
           F  12.16   0.07
@@ -699,15 +704,16 @@ def sld_table(wavelength=None, table=None):
           ...
     """
     table = default_table(table)
-    if wavelength == None: wavelength = table.Cu.K_alpha
+    if wavelength is None:
+        wavelength = table.Cu.K_alpha
 
     # NBCU spreadsheet format
     print("X-ray scattering length density for %g Ang"%wavelength)
-    print("%3s %6s %6s"%('El','rho','irho'))
+    print("%3s %6s %6s"%('El', 'rho', 'irho'))
     for el in table:
-        rho,irho = el.xray.sld(wavelength=table.Cu.K_alpha)
+        rho, irho = el.xray.sld(wavelength=table.Cu.K_alpha)
         if rho is not None:
-            print("%3s %6.2f %6.2f"%(el.symbol,rho,irho))
+            print("%3s %6.2f %6.2f"%(el.symbol, rho, irho))
 
 def emission_table(table=None):
     """
@@ -731,8 +737,7 @@ def emission_table(table=None):
          ...
     """
     table = default_table(table)
-    print("%3s %7s %7s"%('El','Kalpha','Kbeta1'))
+    print("%3s %7s %7s"%('El', 'Kalpha', 'Kbeta1'))
     for el in table:
-        if hasattr(el,'K_alpha'):
-            print("%3s %7.4f %7.4f"%(el.symbol,el.K_alpha,el.K_beta1))
-
+        if hasattr(el, 'K_alpha'):
+            print("%3s %7.4f %7.4f"%(el.symbol, el.K_alpha, el.K_beta1))

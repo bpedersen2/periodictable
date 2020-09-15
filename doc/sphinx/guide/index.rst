@@ -9,10 +9,11 @@ Read this to have an idea about what Periodic Table can do for you (and how)
 and if you want to know in detail about Periodic Table, refer to the 
 :ref:`Periodic Table Modules Reference <api-index>`.
 
-.. htmlonly:
+.. only:: html
 
    :Release: |version|
    :Date: |today|
+
 
 .. toctree::
    :maxdepth: 2
@@ -26,4 +27,3 @@ and if you want to know in detail about Periodic Table, refer to the
    data_sources.rst
    contributing.rst
    license.rst
-   

@@ -43,9 +43,10 @@ Cromer-Mann formula for calculating x-ray scattering factors.
 __id__ = "$Id: cromermann.py 1051 2010-01-30 01:01:43Z juhas $"
 
 import os
-import logging
+
 import numpy
-from periodictable import core
+
+from . import core
 
 
 def getCMformula(symbol):
@@ -57,7 +58,8 @@ def getCMformula(symbol):
 
     Return instance of CromerMannFormula.
     """
-    if not _cmformulas:  _update_cmformulas()
+    if not _cmformulas:
+        _update_cmformulas()
     return _cmformulas[symbol]
 
 
@@ -97,7 +99,8 @@ def fxrayatstol(symbol, stol, charge=None):
     # build standard element or ion symbol
     if charge is not None:
         smbl = symbol.rstrip('012345678+-')
-        if charge:  smbl += ("%+i" % charge)[::-1]
+        if charge:
+            smbl += ("%+i" % charge)[::-1]
     # convert Na+ or Cl- to Na1+, Cl1-
     elif symbol[-1:] in '+-' and not symbol[-2:-1].isdigit():
         smbl = (symbol[:-1] + "1" + symbol[-1:])
@@ -144,8 +147,6 @@ class CromerMannFormula(object):
         self.a = numpy.asarray(a, dtype=float)
         self.b = numpy.asarray(b, dtype=float)
         self.c = float(c)
-        return
-
 
     def atstol(self, stol):
         """
@@ -196,7 +197,7 @@ def _update_cmformulas():
             cmf = CromerMannFormula(smbl, a, b, c)
             _cmformulas[cmf.symbol] = cmf
             smbl = None
-    return
+
 _cmformulas = {}
 
 # End of file

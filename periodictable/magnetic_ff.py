@@ -21,7 +21,7 @@ def formfactor_0(j0, q):
     """
     q = numpy.asarray(q)
     s_sq = (q/(4*pi))**2
-    A,a,B,b,C,c,D = j0
+    A, a, B, b, C, c, D = j0
     return A * exp(-a*s_sq) + B * exp(-b*s_sq) + C * exp(-c*s_sq) + D
 
 def formfactor_n(jn, q):
@@ -30,7 +30,7 @@ def formfactor_n(jn, q):
     """
     q = numpy.asarray(q)
     s_sq = (q/(4*pi))**2
-    A,a,B,b,C,c,D = jn
+    A, a, B, b, C, c, D = jn
     return s_sq * (A * exp(-a*s_sq) + B * exp(-b*s_sq) + C * exp(-c*s_sq) + D)
 
 
@@ -63,13 +63,15 @@ class MagneticFormFactor(object):
 
         >>> import periodictable
         >>> ion = periodictable.Fe.ion[2]
-        >>> print(ion.magnetic_ff[ion.charge].M_Q([0,0.1,0.2]))
-        [ 1.          0.99935255  0.99741366]
+        >>> print("[%.5f, %.5f, %.5f]"
+        ...       % tuple(ion.magnetic_ff[ion.charge].M_Q([0, 0.1, 0.2])))
+        [1.00000, 0.99935, 0.99741]
 
     """
 
 
-    def _getM(self): return self.j0
+    def _getM(self):
+        return self.j0
 
     M = property(_getM, doc="j0")
 
@@ -97,7 +99,9 @@ class MagneticFormFactor(object):
 
 
 def init(table, reload=False):
-    if 'magnetic_ff' in table.properties and not reload: return
+    """Add magnetic form factor properties to the periodic table"""
+    if 'magnetic_ff' in table.properties and not reload:
+        return
     table.properties.append('magnetic_ff')
 
     # Function for interpreting ionization state and form factor tuple
@@ -105,7 +109,7 @@ def init(table, reload=False):
         return state, values
 
     # Remove fortran continuation character, which is & at the end of the line
-    data = CFML_DATA.replace('&\n','')
+    data = CFML_DATA.replace('&\n', '')
 
     # Parse each line
     for line in data.split('\n'):
@@ -123,9 +127,12 @@ def init(table, reload=False):
         # The 'M' form is just j0.  The 'J' form should be j0 + (1-g/2)j2.
         # Split the two parts, remove the slash and figure out if we have
         # j0, j2, j4, j6 or J.
-        a,b = line.split('=')
-        b = b.replace('/','')
-        state, values = eval(b)
+        a, b = line.split('=')
+        b = b.replace('/', '')
+        # The following eval is used for parsing the CFM_DATA table defined
+        # below, so there is no risk that it can be invoked from a web
+        # service with a user-defined malicious string.
+        state, values = eval(b)  # eval checked for malicious usage
         if a.startswith('Magnetic_Form'):
             jn = "j0" if state[0] == 'M' else "J"
             state = state[1:]
@@ -147,7 +154,7 @@ def init(table, reload=False):
         # Add the magnetic form factor info to the element
         el = table.symbol(symbol)
         if not hasattr(el, 'magnetic_ff'):
-            el.magnetic_ff = dict()
+            el.magnetic_ff = {}
         if charge not in el.magnetic_ff:
             el.magnetic_ff[charge] = MagneticFormFactor()
         setattr(el.magnetic_ff[charge], jn, values)
@@ -349,7 +356,7 @@ CFML_DATA = """
                                               (/  0.115285, 85.197300,  0.556229, 25.252200,  0.332476,  6.362070, -0.00460676/) )
        Magnetic_Form( 98) = Magnetic_Form_Type("JCE2", &
                                                  (/  0.031972,  8.926222,  0.265792,  7.678510,  0.682151,  2.329783,  0.020578/) )
-       Magnetic_Form( 99) = Magnetic_Form_Type("JCE2", &
+       Magnetic_Form( 99) = Magnetic_Form_Type("JCE3", &
                                               (/  0.051183,  6.115375,  0.277738,  7.952485,  0.654079,  2.287000,  0.016355/) )
        Magnetic_Form(100) = Magnetic_Form_Type("JPR3", &
                                               (/  0.023288,  0.582954,  0.349391,  5.601756,  0.615363,  1.932779,  0.011454/) )

@@ -27,8 +27,9 @@ Access particular elements as symbols:
     >>> from periodictable import H,B,Cu,Ni
     >>> print("B absorption %s"%B.neutron.absorption)
     B absorption 767.0
-    >>> print("Ni f1/f2 for Cu K-alpha X-rays %s"%str(Ni.xray.scattering_factors(wavelength=Cu.K_alpha)))
-    Ni f1/f2 for Cu K-alpha X-rays (25.022929905648375, 0.52493074546535157)
+    >>> print("Ni f1/f2 for Cu K-alpha X-rays f'=%.5f f''=%.5f"
+    ...       % Ni.xray.scattering_factors(wavelength=Cu.K_alpha))
+    Ni f1/f2 for Cu K-alpha X-rays f'=25.02293 f''=0.52493
 
 Access isotopes using mass number subscripts:
 
@@ -76,7 +77,7 @@ Process all the elements:
     H hydrogen
     He helium
        ...
-    Uuh ununhexium
+    Og oganesson
 
 Another example for processing all elements:
 
@@ -121,16 +122,19 @@ for the ion index:
 
 .. doctest::
 
-    >>> import pylab
     >>> import periodictable
     >>> Fe_2 = periodictable.Fe.ion[2]
-    >>> print(Fe_2.magnetic_ff[Fe_2.charge].M_Q([0,0.1,0.2]))
-    [ 1.          0.99935255  0.99741366]
+    >>> print("[%.5f, %.5f, %.5f]"
+    ...       % tuple(Fe_2.magnetic_ff[Fe_2.charge].M_Q([0,0.1,0.2])))
+    [1.00000, 0.99935, 0.99741]
 
 The following is a plot of the magnetic form factor vs. Q:
 
-    >>> Q = pylab.linspace(0,16,200)
-    >>> M = Fe_2.magnetic_ff[Fe_2.charge].j0_Q(Q)
+.. doctest::
+
+    >>> import pylab # doctest: +SKIP
+    >>> Q = pylab.linspace(0,16,200) # doctest: +SKIP
+    >>> M = Fe_2.magnetic_ff[Fe_2.charge].j0_Q(Q) # doctest: +SKIP
     >>> pylab.xlabel(r'Magnetic Form Factor for Fe') # doctest: +SKIP
     >>> pylab.ylabel(r'$\AA^{-1}$') # doctest: +SKIP
     >>> pylab.title('Ion specific property for Fe') # doctest: +SKIP
@@ -159,4 +163,3 @@ Specific defined properties related to elements can be accessed in a table forma
     Cf K-alpha = 0.1094
     Es K-alpha = 0.1067
     Fm K-alpha = 0.104
-
